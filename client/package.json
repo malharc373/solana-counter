@@ -1,0 +1,12 @@
+{
+  "name": "counter-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "counter": "tsx counter.ts"
+  },
+  "dependencies": {
+    "@solana/kit": "8.6.0",
+    "tsx": "4.23.15"
+  }
+}
