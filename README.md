@@ -1,5 +1,7 @@
 # 01-counter
 
+[![CI](https://github.com/malharc373/solana-counter/actions/workflows/ci.yml/badge.svg)](https://github.com/malharc373/solana-counter/actions/workflows/ci.yml)
+
 A per-user counter on Solana. Every wallet gets its own counter account, a PDA derived from the wallet's address. The wallet can increment it, decrement it, or close it to get its rent back.
 
 Built with **Anchor 1.1.2**, tested with **LiteSVM**, and called from a **@solana/kit** client.

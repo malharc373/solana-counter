@@ -8,6 +8,7 @@ import {
   AccountRole,
   address,
   appendTransactionMessageInstruction,
+  assertIsTransactionWithBlockhashLifetime,
   createKeyPairSignerFromBytes,
   createSolanaRpc,
   createSolanaRpcSubscriptions,
@@ -23,6 +24,8 @@ import {
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
   type KeyPairSigner,
 } from "@solana/kit";
@@ -74,7 +77,7 @@ async function show(authority: Address) {
 
 async function send(signer: KeyPairSigner, kind: keyof typeof IX) {
   const pda = await counterPda(signer.address);
-  const accounts =
+  const accounts: (AccountMeta | AccountSignerMeta)[] =
     kind === "init"
       ? [
           { address: signer.address, role: AccountRole.WRITABLE_SIGNER, signer },
@@ -83,11 +86,10 @@ async function send(signer: KeyPairSigner, kind: keyof typeof IX) {
         ]
       : [
           { address: pda, role: AccountRole.WRITABLE },
-          {
-            address: signer.address,
-            role: kind === "close" ? AccountRole.WRITABLE_SIGNER : AccountRole.READONLY_SIGNER,
-            signer,
-          },
+          // `close` sends the rent to the authority, so it must be writable.
+          kind === "close"
+            ? { address: signer.address, role: AccountRole.WRITABLE_SIGNER, signer }
+            : { address: signer.address, role: AccountRole.READONLY_SIGNER, signer },
         ];
 
   const { value: blockhash } = await rpc.getLatestBlockhash().send();
@@ -98,6 +100,7 @@ async function send(signer: KeyPairSigner, kind: keyof typeof IX) {
     (m) => appendTransactionMessageInstruction({ programAddress: PROGRAM_ID, accounts, data: IX[kind] }, m),
   );
   const tx = await signTransactionMessageWithSigners(message);
+  assertIsTransactionWithBlockhashLifetime(tx);
   await sendAndConfirm(tx, { commitment: "confirmed" });
   const sig = getSignatureFromTransaction(tx);
   const cluster = RPC_URL.includes("devnet") ? "?cluster=devnet" : "";

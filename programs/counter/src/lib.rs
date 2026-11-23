@@ -27,20 +27,14 @@ pub mod counter {
 
     pub fn increment(ctx: Context<Update>) -> Result<()> {
         let counter = &mut ctx.accounts.counter;
-        counter.count = counter
-            .count
-            .checked_add(1)
-            .ok_or(ErrorCode::Overflow)?;
+        counter.count = counter.count.checked_add(1).ok_or(ErrorCode::Overflow)?;
         msg!("count = {}", counter.count);
         Ok(())
     }
 
     pub fn decrement(ctx: Context<Update>) -> Result<()> {
         let counter = &mut ctx.accounts.counter;
-        counter.count = counter
-            .count
-            .checked_sub(1)
-            .ok_or(ErrorCode::Underflow)?;
+        counter.count = counter.count.checked_sub(1).ok_or(ErrorCode::Underflow)?;
         msg!("count = {}", counter.count);
         Ok(())
     }

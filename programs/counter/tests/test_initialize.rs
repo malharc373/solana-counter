@@ -66,24 +66,39 @@ fn ix_update(data: Vec<u8>, counter: Pubkey, authority: &Pubkey) -> Instruction 
     Instruction::new_with_bytes(
         counter::id(),
         &data,
-        accounts::Update { counter, authority: *authority }.to_account_metas(None),
+        accounts::Update {
+            counter,
+            authority: *authority,
+        }
+        .to_account_metas(None),
     )
 }
 
 fn ix_increment(authority: &Pubkey) -> Instruction {
-    ix_update(instruction::Increment {}.data(), counter_pda(authority), authority)
+    ix_update(
+        instruction::Increment {}.data(),
+        counter_pda(authority),
+        authority,
+    )
 }
 
 fn ix_decrement(authority: &Pubkey) -> Instruction {
-    ix_update(instruction::Decrement {}.data(), counter_pda(authority), authority)
+    ix_update(
+        instruction::Decrement {}.data(),
+        counter_pda(authority),
+        authority,
+    )
 }
 
 fn ix_close(authority: &Pubkey) -> Instruction {
     Instruction::new_with_bytes(
         counter::id(),
         &instruction::Close {}.data(),
-        accounts::Close { counter: counter_pda(authority), authority: *authority }
-            .to_account_metas(None),
+        accounts::Close {
+            counter: counter_pda(authority),
+            authority: *authority,
+        }
+        .to_account_metas(None),
     )
 }
 
@@ -167,12 +182,17 @@ fn close_refunds_rent() {
     let alice = user(&mut svm);
     send(&mut svm, ix_initialize(&alice.pubkey()), &alice).unwrap();
 
-    let rent = svm.get_account(&counter_pda(&alice.pubkey())).unwrap().lamports;
+    let rent = svm
+        .get_account(&counter_pda(&alice.pubkey()))
+        .unwrap()
+        .lamports;
     let before = svm.get_balance(&alice.pubkey()).unwrap();
     send(&mut svm, ix_close(&alice.pubkey()), &alice).unwrap();
     let after = svm.get_balance(&alice.pubkey()).unwrap();
 
-    assert!(svm.get_account(&counter_pda(&alice.pubkey())).map_or(true, |a| a.lamports == 0));
+    assert!(svm
+        .get_account(&counter_pda(&alice.pubkey()))
+        .is_none_or(|a| a.lamports == 0));
     // Alice gets the rent back, minus the 5000-lamport tx fee.
     assert_eq!(after, before + rent - 5000);
 }
