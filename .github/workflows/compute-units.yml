@@ -1,0 +1,13 @@
+name: Compute units
+
+on: pull_request
+
+jobs:
+  cu-guard:
+    permissions:
+      contents: read
+      pull-requests: write # for the comment
+    uses: malharc373/solana-cu-guard/.github/workflows/compare.yml@b32a4bc76df7090cb6fe08839a07c0cbc15fa148
+    with:
+      solana-version: v3.1.10
+      command: cargo build-sbf && cargo test cu_report
