@@ -26,7 +26,6 @@ pub mod counter {
     }
 
     pub fn increment(ctx: Context<Update>) -> Result<()> {
-        msg!("incrementing");
         let counter = &mut ctx.accounts.counter;
         counter.count = counter.count.checked_add(1).ok_or(ErrorCode::Overflow)?;
         msg!("count = {}", counter.count);
