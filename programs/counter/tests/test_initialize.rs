@@ -196,3 +196,43 @@ fn close_refunds_rent() {
     // Alice gets the rent back, minus the 5000-lamport tx fee.
     assert_eq!(after, before + rent - 5000);
 }
+
+/// Sends one instruction that must succeed; returns the transaction's compute units.
+fn compute_units(svm: &mut LiteSVM, ix: Instruction, signer: &Keypair) -> u64 {
+    let msg = Message::new_with_blockhash(&[ix], Some(&signer.pubkey()), &svm.latest_blockhash());
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[signer]).unwrap();
+    let meta = svm
+        .send_transaction(tx)
+        .unwrap_or_else(|e| panic!("{:?}\n{}", e.err, e.meta.logs.join("\n")));
+    svm.expire_blockhash();
+    meta.compute_units_consumed
+}
+
+/// Writes `target/cu-report.json` for the compute-unit check in CI.
+fn write_cu_report(rows: &[(String, u64)]) {
+    let body: Vec<String> = rows
+        .iter()
+        .map(|(n, cu)| format!("  \"{n}\": {cu}"))
+        .collect();
+    let json = format!("{{\n{}\n}}\n", body.join(",\n"));
+    let path = concat!(env!("CARGO_TARGET_TMPDIR"), "/../cu-report.json");
+    std::fs::write(path, &json).unwrap();
+    println!("{json}");
+}
+
+/// A fixed wallet gives the same PDA and bump, so the same compute units, every run.
+#[test]
+fn cu_report() {
+    let mut svm = setup();
+    let wallet = Keypair::new_from_array([1; 32]);
+    let key = wallet.pubkey();
+    svm.airdrop(&key, SOL).unwrap();
+    let rows = [
+        ("initialize", ix_initialize(&key)),
+        ("increment", ix_increment(&key)),
+        ("decrement", ix_decrement(&key)),
+        ("close", ix_close(&key)),
+    ]
+    .map(|(name, ix)| (name.to_string(), compute_units(&mut svm, ix, &wallet)));
+    write_cu_report(&rows);
+}
