@@ -40,6 +40,8 @@ anchor build
 cargo test
 ```
 
+On each pull request, [solana-cu-guard](https://github.com/malharc373/solana-cu-guard) runs the `cu_report` test on the base commit and on the change, and fails the check if any instruction costs more.
+
 ```bash
 cd client && npm install && npm run counter -- show
 ```
