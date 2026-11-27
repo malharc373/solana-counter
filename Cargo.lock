@@ -895,6 +895,7 @@ name = "counter"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "cu-report",
  "litesvm",
  "solana-keypair",
  "solana-message",
@@ -988,6 +989,11 @@ dependencies = [
  "cmov",
  "subtle",
 ]
+
+[[package]]
+name = "cu-report"
+version = "0.1.0"
+source = "git+https://github.com/malharc373/solana-cu-guard?rev=1e8205ce3c5c152a34a5452295bbbc10a85b3335#1e8205ce3c5c152a34a5452295bbbc10a85b3335"
 
 [[package]]
 name = "curve25519-dalek"

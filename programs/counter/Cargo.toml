@@ -24,6 +24,7 @@ custom-panic = []
 anchor-lang = "1.1.2"
 
 [dev-dependencies]
+cu-report = { git = "https://github.com/malharc373/solana-cu-guard", rev = "1e8205ce3c5c152a34a5452295bbbc10a85b3335" }
 litesvm = "0.10.0"
 solana-message = "3.0.1"
 solana-transaction = "3.0.2"
